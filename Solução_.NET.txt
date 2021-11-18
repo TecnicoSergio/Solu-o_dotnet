@@ -1,0 +1,99 @@
+Solução de problemas: 'O SDK do .NET Core não pode ser localizado.' erros
+Sérgio Rodrigues dos Santos
+ Páginas 26
+Configuração
+
+Configurando instalações instantâneas de dotnet-sdk
+Configurando Arch Linux para desenvolvimento Unity
+Configurando o Arch Linux para o desenvolvimento do Razor
+Instalando o depurador .NET Core no Arch Linux
+Depurador
+
+Visão geral
+Ajuda do launch.json
+Lista de Recursos
+Habilitar registro
+PDBs portáteis
+Solucionar problemas de pontos de interrupção
+Anexando a processos remotos
+Depuração remota no Linux-Arm
+Subsistema Windows para Linux
+Diagnosticando 'O processo do adaptador de depuração terminou inesperadamente'
+Testando a compatibilidade da libicu no Linux
+Depuração no próprio .NET Framework
+Documentação
+
+Log de alterações
+Filiais e lançamentos
+Instalando versões beta
+Instalando sem conectividade com a Internet
+Suporte Linux
+Executar / depurar testes de unidade
+Solução de problemas: 'O SDK do .NET Core não pode ser localizado.' erros
+Guia do desenvolvedor
+
+Escrevendo testes
+Clone este wiki localmente
+https://github.com/OmniSharp/omnisharp-vscode.wiki.git
+Introdução
+Esta página contém mais informações sobre o erro:
+
+O SDK do .NET Core não pode ser localizado. A depuração do .NET Core não será habilitada. Certifique-se de que o .NET Core SDK esteja instalado e no caminho.
+
+O que esse erro significa é que essa extensão executou o comando dotnete NÃOdotnet foi encontrada no processo da extensão.PATH
+
+Se você não tiver o SDK do .NET Core instalado, corrigir esse erro geralmente é bastante simples: visite https://dot.net/core-sdk-vscode para baixar e instalar o SDK do .NET Core.
+
+Se você tiver o .NET Core SDK instalado, isso significa que o diretório que contém dotnet(Linux e macOS) ou dotnet.exe(Windows) não está no seu PATH, pelo menos no processo desta extensão. O restante desta página fornecerá conselhos sobre o porquê.
+
+Problemas conhecidos
+Antes de chegarmos a uma lista de etapas de solução de problemas, vamos primeiro enumerar alguns motivos conhecidos pelos quais esse erro ocorre:
+
+Se você instalou recentemente o .NET SDK -
+Se você tinha o Visual Studio Code aberto no momento em que instalou o .NET SDK e não o reiniciou, deve fazê-lo.
+No Windows, em algumas máquinas, as alterações nas variáveis ​​de ambiente não têm efeito imediato. Reinicie o computador para ver se isso resolve o problema.
+Se o .NET SDK foi instalado por meio do Linux Snap - consulte as instruções do Linux Snap
+Etapas gerais de solução de problemas em Linux / Mac
+A primeira etapa para solucionar esse problema é ver se esse problema também ocorre em um terminal / shell. Depois de iniciar um terminal ou shell, digite which dotnet.
+
+Se which dotnetproduz um PATH, então o .NET SDK foi capaz de modificar o PATH com sucesso, mas o VS Code não o está captando. O VS Code tenta destruir o ambiente, lançando o shell padrão por baixo dos panos. Mas esse processo pode ser frágil. Você pode tentar contornar isso iniciando o VS Code em seu Terminal. Como alternativa, você pode tentar depurar o código VS para entender o que está errado - neste momento, pelo menos, a função para depurar é getUnixShellEnvironment. Por último, você pode adicionar manualmente um link simbólico de um diretório que está no PATH em todos os processos para onde quer que dotnetesteja instalado (consulte as instruções abaixo).
+
+Se which dotnetnão produzir saída, isso significa que o SDK do .NET não foi capaz de modificar PATHou adicionar um link simbólico, ou o SDK do .NET para sua plataforma não o fez. Você pode corrigir isso adicionando um link simbólico você mesmo (exemplo: sudo ln -s /usr/share/dotnet/dotnet /usr/bin/dotnetonde /usr/share/dotnet/dotnetdeve ser substituído por onde o instalador do .NET SDK para sua plataforma foi instalado) ou modificando PATHmanualmente (exemplo: modificar ~ / .bashrc adicionar adicionar algo como export PATH=$PATH:/new/directory/here)
+
+Etapas gerais de solução de problemas no Windows
+Em primeiro lugar, conforme mencionado acima, se você instalou o .NET SDK desde a última reinicialização do Windows, pode começar reiniciando apenas para ver se isso corrige as coisas.
+
+Caso contrário, você pode começar a solucionar esse problema para ver se ele também acontece em um prompt de comando:
+
+Inicie um prompt de comando:
+Pressione WinKey+Rpara abrir a caixa de diálogo de execução do Windows
+Digitar cmd.exe
+Quando o prompt de comando iniciar, digite where.exe dotnet.
+Se o resultado da execução where.exefor a impressão de um caminho para dotnet.exe (exemplo:) C:\Program Files\dotnet\dotnet.exe, o SDK do .NET foi adicionado com êxito ao caminho do Windows. Não há motivos conhecidos pelos quais o PATH não seria propagado para o processo do VS Code. Você pode tentar iniciar o VS Code no prompt de comando para ver se isso ajuda.
+
+Se o resultado da execução where.exefor uma mensagem como INFO: Could not find files for the given pattern(s)., o SDK do .NET não foi capaz de se adicionar ao PATH. Você pode tentar desinstalar e reinstalar o .NET SDK. Você também pode tentar examinar o caminho padrão com as seguintes etapas:
+
+Abra as propriedades do sistema:
+Windows 10 - No menu Iniciar, pesquise 'Este PC' e abra as propriedades
+Antes - No menu Iniciar, pesquise 'Meu computador' e abra as propriedades
+Vá para as configurações avançadas
+Clique no botão para 'Variáveis ​​de ambiente'
+Encontre 'Caminho' na lista do usuário ou do sistema
+Veja se o diretório dotnet.exe (exemplo:) C:\Program Files\dotnetestá na lista. Se não, você pode adicioná-lo.
+Se estiver na lista, você poderá ver se talvez outro diretório o tenha adicionado incorretamente (exemplo: adicionado uma citação de abertura sem uma aspa final), ou se o conjunto de variáveis ​​de ambiente cresceu muito - há um limite de 32.767 caracteres no total.
+Observação sobre instalações de 64 bits do .NET SDK
+Em ambientes de 64 bits, o SDK do .NET não será descoberto se o caminho do dotnet de 32 bits vier antes do caminho do dotnet de 64 bits na variável PATH do ambiente. Tente remover o caminho de 32 bits inteiramente de sua variável PATH e reinicie o VS Code para ver se o problema foi resolvido.
+
+Instruções Especiais
+Instruções do Linux Snap
+Os pacotes Linux Snap para o .NET Core SDK, por padrão, não criarão o dotnetlink. Para fazer isso, corra sudo snap alias dotnet-sdk.dotnet dotnet. Mais informações sobre isso podem ser encontradas nas notas de versão do .NET Core SDK .
+
+Observe que, no momento da redação deste artigo, também havia outras incompatibilidades entre esta extensão e o pacote .NET Core SDK Snap, além do dotnetproblema de PATH. Essa incompatibilidade pode resultar em:
+
+Alguns projetos têm problemas para carregar. Por favor, reveja a saída para mais detalhes. Não foi possível encontrar nenhum SDK do .NET Core instalado. Você quis dizer executar comandos do SDK do .NET Core? Instale um SDK do .NET Core em: https://aka.ms/dotnet-download
+
+Mais informações sobre este problema podem ser encontradas em dotnet / cli # 12110 .
+
+Alguns membros da comunidade tiveram sucesso ao usar a instalação Snap seguindo as instruções listadas em Configurando instalações Snap de dotnet-sdk .
+
+Outra solução possível é adicionar o seguinte ao ~/.omnisharp/omnisharp.json
